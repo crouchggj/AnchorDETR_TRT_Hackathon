@@ -1,7 +1,9 @@
 ## 总述
-请简练地概括项目的主要贡献，使读者可以快速理解并复现你的工作，包括：
-- 原始模型的名称及链接
-- 优化效果（精度和加速比），简单给出关键的数字即可，在这里不必详细展开
+本项目主要贡献包括:
+- 基于TensorRT在Nvidia GPU平台实现Anchor DETR模型的转换和加速
+
+  开源代码地址：<https://github.com/megvii-research/AnchorDETR>
+- 优化效果（精度和加速比）
 - 在Docker里面代码编译、运行步骤的完整说明
   - 请做到只要逐行运行你给的命令，就能把代码跑起来，比如从docker pull开始
 
@@ -24,8 +26,25 @@ Anchor DETR是由旷视科技孙剑团队于2021年9月提出并于最近开源�
 
 论文地址：<https://arxiv.org/abs/2109.07107>
 
-开源代码地址：<https://github.com/megvii-research/AnchorDETR>
-
 ### 模型优化的难点
-
+- 原始模型导出ONNX时，出现错误
+```
+Traceback (most recent call last):
+  File "export_onnx.py", line 61, in <module>
+    export_onnx()
+  File "export_onnx.py", line 48, in export_onnx
+    model_sim, check_ok=simplify(onnx.load(onnx_path))
+  File "/usr/local/lib/python3.6/dist-packages/onnx_simplifier-0.3.5-py3.6.egg/onnxsim/onnx_simplifier.py", line 483, in simplify
+  File "/usr/local/lib/python3.6/dist-packages/onnx_simplifier-0.3.5-py3.6.egg/onnxsim/onnx_simplifier.py", line 384, in fixed_point
+  File "/usr/local/lib/python3.6/dist-packages/onnx_simplifier-0.3.5-py3.6.egg/onnxsim/onnx_simplifier.py", line 480, in constant_folding
+  File "/usr/local/lib/python3.6/dist-packages/onnx/checker.py", line 99, in check_model
+    protobuf_string = model.SerializeToString()
+ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 7753581684
+```
+    
+  - 通过查看github issue需要更新util/misc.py中nested_tensor_from_tensor_list方法，防止在进行ONNX导出出现异常，参考如下：
+      - <https://github.com/megvii-research/AnchorDETR/issues/10>
+      - <https://github.com/facebookresearch/detr/pull/173>
+- 使用trtexec工具模型转换时，出现错误，需要针对算子进行改造
+- ONNX模型带有大量零碎的算子，可以通过自定义插件进行整体，能进一步提升模型的运行速度
 ## 优化过程
