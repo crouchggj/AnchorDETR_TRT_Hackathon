@@ -42,9 +42,12 @@ Traceback (most recent call last):
 ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 7753581684
 ```
     
-  - 通过查看github issue需要更新util/misc.py中nested_tensor_from_tensor_list方法，防止在进行ONNX导出出现异常，参考如下：
-      - <https://github.com/megvii-research/AnchorDETR/issues/10>
-      - <https://github.com/facebookresearch/detr/pull/173>
+> 通过查看github issue需要更新util/misc.py中nested_tensor_from_tensor_list方法，防止在进行ONNX导出出现异常，参考如下：
+> 
+> <https://github.com/megvii-research/AnchorDETR/issues/10>
+> 
+> <https://github.com/facebookresearch/detr/pull/173>
+
 - 使用trtexec工具模型转换时，出现错误，需要针对算子进行改造
 - ONNX模型带有大量零碎的算子，可以通过自定义插件进行整体，能进一步提升模型的运行速度
 ## 优化过程
