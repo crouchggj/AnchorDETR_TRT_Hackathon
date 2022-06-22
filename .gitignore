@@ -1,1 +1,5 @@
 *.onnx
+*.plan
+*.cache
+Trt/.vscode/
+Trt/build/
