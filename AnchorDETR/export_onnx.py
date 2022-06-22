@@ -35,7 +35,7 @@ def export_onnx():
     model.to(device)
     model.eval()
 
-    dummy_image = torch.rand(1, 3, 800, 800)
+    dummy_image = torch.rand(1, 3, 800, 1066)
     with torch.no_grad():
         res1=model(dummy_image.to(device))
 
@@ -43,7 +43,7 @@ def export_onnx():
     torch.onnx.export(model, (dummy_image.to(device),), onnx_path,
                       opset_version=12,
                       input_names=["inputs"], output_names=["pred_logits", "pred_boxes"],
-                      use_external_data_format=True)
+                      use_external_data_format=False)
     onnx.checker.check_model(onnx_path)
 
     model_sim, check_ok=simplify(onnx.load(onnx_path))
