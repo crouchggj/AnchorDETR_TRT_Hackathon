@@ -1,11 +1,9 @@
 ## 总述
 本项目主要贡献包括:
 - 基于TensorRT在Nvidia GPU平台实现Anchor DETR模型的转换和加速
-
-  开源代码地址：<https://github.com/megvii-research/AnchorDETR>
+  - 开源代码地址：<https://github.com/megvii-research/AnchorDETR>
 - 优化效果（精度和加速比）
-- 在Docker里面代码编译、运行步骤的完整说明
-  - 请做到只要逐行运行你给的命令，就能把代码跑起来，比如从docker pull开始
+- 提供了在Docker里面代码编译、运行步骤的完整说明
 
 ## 原始模型
 ### 模型简介
@@ -75,9 +73,13 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
 从2325降低到1985，整体算子降低14%。
 ### 性能和精度对比
 
-|硬件平台 |精度｜延迟(ms)|帧率(fps)|
-|--------|----|-------|---------|
-|V100    |FP32|62.5   |16       |
+|优化手段|硬件平台      |精度 |延迟(ms)|帧率(fps)|
+|-------|-------------|----|-------|---------|
+|pytorch加速|V100     |FP32|62.5   |16       |
+|TensorRT加速|T4      |FP32|||
+|TensorRT加速|T4      |FP16|||
+|优化手段+TensorRT加速|T4      |FP16|||
+|优化手段+TensorRT加速|T4      |INT8|||
 
 ## 代码框架
 - AnchorDETR
@@ -90,6 +92,48 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
   - surgeonModel.py: onnx模型融合简化脚本
   - profileModel.py: TensorRT模型性能评估脚本
   - data: npz文件为模型性能评估对比数据，calibration为模型int8量化数据
+
+## Docker运行
+* 搭建Docker运行环境
+
+  1. docker pull
+
+* 导出ONNX模型
+
+  1. 通过百度云盘下载anchor-detr-dc5模型，将模型放置于Model目录。
+  2. 进入AnchorDERT，执行模型导出脚本
+
+  `python export_onnx.py --checkpoint ../Model/anchor-detr-dc5.pth`
+
+  3. 模型导出成功，会在Model目录下创建anchor-detr-dc5.onnx。
+
+* 模型优化
+  1. 进入Trt目录，运行surgeonModel.py脚本，优化模型。
+
+  `python surgeonModel.py ../Model/anchor-detr-dc5.onnx ../Model/dc5_new.onnx`
+  
+  2. 模型优化成功，会在Model目录下创建dc5_new.onnx。
+
+* TensorRT加速
+  1. 进入Trt目录，编译生成TensorRT转换可执行文件。
+  `mkdir build && cd build && cmake .. && make`
+  2. 运行./build/AnchorDETRTrt加速模型
+    - FP32模型加速: 
+    
+    `./build/AnchorDETRTrt ../Model/dc5_new.onnx 0 0`
+    - FP16模型加速: 
+        
+    `./build/AnchorDETRTrt ../Model/dc5_new.onnx 1 0`
+
+    - INT8模型加速:
+
+    `./build/AnchorDETRTrt ../Model/dc5_new.onnx 0 1`
+* 性能和精度评估
+  1. 进入Trt目录，执行profileModel.py脚本。
+
+  `python --plan AnchorDETR.plan`
+
+  2. 观察输出结果。
 
 
 

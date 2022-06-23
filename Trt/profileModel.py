@@ -38,9 +38,7 @@ def check(a, b, weak=False, epsilon=1e-5):
     return res, diff0, diff1
 
 
-def run(plan=ROOT,
-        half=False,
-        int8=False):
+def run(plan=ROOT):
     logger = trt.Logger(trt.Logger.ERROR)
     trt.init_libnvinfer_plugins(logger, '')
 
@@ -148,9 +146,6 @@ def parse_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('--plan', nargs='+', type=str,
                         default=ROOT / 'model.plan', help='model.plan path(s)')
-    parser.add_argument('--half', action='store_true',
-                        help='FP16 half-precision inference')
-    parser.add_argument('--int8', action='store_true', help='INT8 inference')
     opt = parser.parse_args()
     return opt
 

@@ -13,7 +13,7 @@ from models import build_model
 
 def get_args_parser():
     parser = argparse.ArgumentParser('onnx', add_help=False)
-    #parser.add_argument('--checkpoiont', default='', type=str,help='path to the checkpoiont')
+    parser.add_argument('--checkpoint', default='', type=str,help='path to the checkpoiont')
     #parser.add_argument('--device', default='cpu', type=str, choices=['cpu', 'cuda'])
     return parser
 
@@ -21,8 +21,8 @@ def export_onnx():
 
     args = get_args_parser().parse_args()
     #device = args.device
-    #checkpoiont = args.checkpoiont
-    checkpoiont = "AnchorDETR_r50_dc5.pth"
+    checkpoiont = args.checkpoiont
+    #checkpoiont = "AnchorDETR_r50_dc5.pth"
     device = "cuda"
 
     main_args = get_main_args_parser().parse_args()
@@ -39,7 +39,7 @@ def export_onnx():
     with torch.no_grad():
         res1=model(dummy_image.to(device))
 
-    onnx_path = 'anchor-detr-dc5.onnx'
+    onnx_path = '../Model/anchor-detr-dc5.onnx'
     torch.onnx.export(model, (dummy_image.to(device),), onnx_path,
                       opset_version=12,
                       input_names=["inputs"], output_names=["pred_logits", "pred_boxes"],
