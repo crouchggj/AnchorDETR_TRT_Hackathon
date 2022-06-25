@@ -69,10 +69,6 @@ int32_t LayerNormPlugin::enqueue(const PluginTensorDesc* inputDesc,
   if (inputDesc[0].dims.nbDims == 4) {
     nBlock *= inputDesc[0].dims.d[2];
   }
-  // layerNormKernel <<<nBlock, 128, 0, stream>>>((float *)inputs[0],
-  //                                             (float *)inputs[1],
-  //                                             (float *)inputs[2],
-  //                                             (float *)outputs[0]);
 
   if (inputDesc[0].type == DataType::kHALF) {
     invokeGeneralLayerNorm((half*)outputs[0], (half*)inputs[0],

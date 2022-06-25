@@ -59,17 +59,21 @@ bool OnnxToTrt(const hackathon::CommandParam& command_param) {
   param.nWidth = network->getInput(0)->getDimensions().d[3];
   auto calib = make_unique<Calibrator>(1, &param, "int8_trt.cache");
 
+  string prefix;
   if (command_param.use_half) {
     cout << "Use HALF Mode\n";
     config->setFlag(BuilderFlag::kFP16);
     config->setFlag(BuilderFlag::kSTRICT_TYPES);
+    prefix = "HALF";
   } else if (command_param.use_int8) {
     cout << "Use INT8 Mode\n";
     config->setFlag(BuilderFlag::kINT8);
     config->setInt8Calibrator(calib.get());
+    prefix = "INT8";
   } else {
     cout << "Use FP32 or TF32 Mode\n";
     config->setFlag(BuilderFlag::kTF32);
+    prefix = "FP32";
   }
 
   // build engine
@@ -81,7 +85,7 @@ bool OnnxToTrt(const hackathon::CommandParam& command_param) {
     return false;
   }
 
-  string save_trt_file(kTrtPlanName);
+  string save_trt_file(prefix + "_" + kTrtPlanName);
   ofstream ofs(save_trt_file);
   ofs.write(static_cast<const char*>(trt_model_stream->data()),
             trt_model_stream->size());
