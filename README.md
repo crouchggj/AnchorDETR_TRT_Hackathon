@@ -2,8 +2,9 @@
 本项目主要贡献包括:
 - 基于TensorRT在Nvidia GPU平台实现Anchor DETR模型的转换和加速
   - 开源代码地址：<https://github.com/megvii-research/AnchorDETR>
-- 通过手动算子融合裁剪以及TensorRT实现在FP16下实时的性能要求，并且精度降低在合理范围内
-- 通过对比TensorRT8.4GA和TensorRT8.2得出，TensorRT8.4GA对该类模型本身有5%性能提升
+- 通过手动算子融合裁剪以及TensorRT加速技术实现在半精度模式下实时的性能要求，并且精度损失在合理范围内
+- 通过对比TensorRT8.4GA和TensorRT8.2得出相关推理性能，TensorRT8.4GA对该类模型本身有5%性能提升
+- 提供了TensorRT下8比特模型量化的实现，方便后期进一步的优化提升
 - 提供了在Docker里面代码编译、运行步骤的完整说明
 
 ## 原始模型
