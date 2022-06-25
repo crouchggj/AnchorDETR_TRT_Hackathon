@@ -99,9 +99,6 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
   - data: npz文件为模型性能评估对比数据，calibration为模型int8量化数据
 
 ## Docker运行
-* 搭建Docker运行环境
-
-  1. docker pull nvidia/cuda:11.4.2-cudnn8-devel-ubuntu20.04
 
 * 导出ONNX模型
 
@@ -111,6 +108,13 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
   `python3 export_onnx.py --checkpoint ../Model/AnchorDETR_r50_dc5.pth`
 
   3. 模型导出成功，会在Model目录下创建anchor-detr-dc5.onnx。
+  * 导出模型环境所使用的镜像名称为: ufoym/deepo:all-py36-cu101
+
+* 搭建Docker运行环境
+
+  1. 拉取运行镜像
+  
+  `docker pull nvidia/cuda:11.4.2-cudnn8-devel-ubuntu20.04`
 
 * 模型优化
   1. 进入Trt目录，运行surgeonModel.py脚本，优化模型。
@@ -121,7 +125,7 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
 
 * TensorRT加速
   1. 进入Trt目录，编译生成TensorRT转换可执行文件。
-  `mkdir build && cd build && cmake .. && make j4`
+  `mkdir build && cd build && cmake .. && make j8`
   2. 运行./build/AnchorDETRTrt加速模型
     - FP32模型加速: 
     
@@ -137,7 +141,7 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
   1. 进入Trt目录，执行profileModel.py脚本。
   `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/TensorRT-8.4.0.6/targets/x86_64-linux-gnu/lib/`
 
-  `python3 profileModel.py --plan build/AnchorDETR.plan`
+  `python3 profileModel.py --plan build/XX_AnchorDETR.plan`
 
   2. 观察输出结果。
 
@@ -145,7 +149,7 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
 
 通过本次比赛能对onnx模型裁剪操作、TensorRT加速流程有了更深入的理解，在Transformer模型加速、算子融合、TensorRT自定义算子方面积累了丰富的工程实践经验。
 
-后期还会继续AnchorDETR模型在低精度上的研究，使其在INT8和FP16上有更好的工程应用。
+后期还会继续AnchorDETR模型在低精度上的研究，通过实现FP16的算子，使其在FP16上有更好的工程应用，通过分析INT8量化性能瓶颈，使其在INT8上能获得更好的性能收益。
 
 ## Known Issue
 * INT8模型量化在TensorRT8.4上无法正常模型加速。
