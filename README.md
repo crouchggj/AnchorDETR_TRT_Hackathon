@@ -2,8 +2,9 @@
 本项目主要贡献包括:
 - 基于TensorRT在Nvidia GPU平台实现Anchor DETR模型的转换和加速
   - 开源代码地址：<https://github.com/megvii-research/AnchorDETR>
-- 通过手动算子融合裁剪以及TensorRT实现在FP16下实时的性能要求，并且精度降低在合理范围内
-- 通过对比TensorRT8.4GA和TensorRT8.2得出，TensorRT8.4GA对该类模型本身有5%性能提升
+- 通过手动算子融合裁剪以及TensorRT加速技术实现在半精度模式下实时的性能要求，并且精度损失在合理范围内
+- 通过对比TensorRT8.4GA和TensorRT8.2得出相关推理性能，TensorRT8.4GA对该类模型在FP16精度下有10%以上，FP32精度有5%以上的性能提升，后期工程实践时尽量以FP16精度为主
+- 提供了TensorRT下8比特模型量化的实现，方便后期进一步的优化提升
 - 提供了在Docker里面代码编译、运行步骤的完整说明
 
 ## 原始模型
@@ -77,11 +78,11 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
 |优化手段|软件版本|硬件平台  |精度 |延迟(ms)|帧率(fps)|绝对误差|相对误差|
 |-------|----|-----------------|----|-------|---------|-------|-------|
 |pytorch加速|pytorch1.8|V100 |FP32|62.5   |16       |无      |无     |
-|优化|TensorRT8.2|A10 |FP32|32.91  |30.4     |4.2e-2|1.3e-4|
-|优化|TensorRT8.2|A10 |FP16|14.7   |67       |||
+|优化|TensorRT8.2|A10 |FP32|32.9   |30.4     |4.2e-2|1.3e-4|
+|优化|TensorRT8.2|A10 |FP16|26.5   |37.7     |1.4e-1|4.1e-4|
 |优化|TensorRT8.2|A10 |INT8|24.9   |40.1     |3.9e0 |1.3e-2|
 |优化|TensorRT8.4|A10 |FP32|31.5   |31.7     |2.2e-2|9.5e-5|
-|优化|TensorRT8.4|A10 |FP16|21     |47.24    |-|-|
+|优化|TensorRT8.4|A10 |FP16|22.3   |44.8     |5.2e-1|8.1e-4|
 |优化|TensorRT8.4|A10 |INT8|-|-|-|-|
 
 
