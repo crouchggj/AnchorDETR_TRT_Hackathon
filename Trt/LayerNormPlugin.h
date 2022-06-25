@@ -100,8 +100,7 @@ class LayerNormPlugin : public IPluginV2DynamicExt {
       case 0:
       case 1:
       case 2:
-        res = (inOut[pos].type == DataType::kHALF) ||
-              (inOut[pos].type == DataType::kFLOAT);
+        res = (inOut[pos].type == DataType::kFLOAT);
         break;
       case 3:
         res = inOut[pos].type == inOut[0].type;
