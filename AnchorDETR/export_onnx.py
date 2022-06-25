@@ -13,25 +13,22 @@ from models import build_model
 
 def get_args_parser():
     parser = argparse.ArgumentParser('onnx', add_help=False)
-    parser.add_argument('--checkpoint', default='', type=str,help='path to the checkpoiont')
-    #parser.add_argument('--device', default='cpu', type=str, choices=['cpu', 'cuda'])
+    parser.add_argument('--checkpoint', default='', type=str,help='path to the checkpoint')
+    parser.add_argument('--device', default='cuda', type=str, choices=['cpu', 'cuda'])
     return parser
 
 def export_onnx():
 
     args = get_args_parser().parse_args()
-    #device = args.device
-    checkpoiont = args.checkpoiont
-    #checkpoiont = "AnchorDETR_r50_dc5.pth"
-    device = "cuda"
+    device = args.device
+    checkpoint = args.checkpoint
 
     main_args = get_main_args_parser().parse_args()
     main_args.aux_loss = False
 
     model, _, _ = build_model(main_args)
-    if checkpoiont:
-        print("checkpoiont: ", checkpoiont)
-        model.load_state_dict(torch.load(checkpoiont)['model'])
+    if checkpoint:
+        model.load_state_dict(torch.load(checkpoint)['model'])
     model.to(device)
     model.eval()
 
@@ -48,13 +45,6 @@ def export_onnx():
 
     model_sim, check_ok=simplify(onnx.load(onnx_path))
     onnx.save_model(model_sim,onnx_path)
-
-    #ort_session = onnxruntime.InferenceSession(onnx_path)
-    #res2=ort_session.run(None, {"inputs":dummy_image.cpu().numpy()})
-    #res1 = list(res1.values())
-    #torch.testing.assert_allclose(res1[0].cpu().numpy(), res2[0], rtol=1e-03, atol=1e-05)
-    #torch.testing.assert_allclose(res1[1].cpu().numpy(), res2[1], rtol=1e-03, atol=1e-05)
-
     print('done')
     return
 

@@ -1,5 +1,6 @@
 *.onnx
 *.plan
 *.cache
+__pycache__
 Trt/.vscode/
 Trt/build/

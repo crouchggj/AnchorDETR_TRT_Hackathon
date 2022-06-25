@@ -73,13 +73,15 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
 从2325降低到1985，整体算子降低14%。
 ### 性能和精度对比
 
-|优化手段|硬件平台      |精度 |延迟(ms)|帧率(fps)|
-|-------|-------------|----|-------|---------|
-|pytorch加速|V100     |FP32|62.5   |16       |
-|TensorRT加速|T4      |FP32|||
-|TensorRT加速|T4      |FP16|||
-|优化手段+TensorRT加速|T4      |FP16|||
-|优化手段+TensorRT加速|T4      |INT8|||
+|优化手段 |硬件平台          |精度 |延迟(ms)|帧率(fps)|
+|-------|-----------------|----|-------|---------|
+|pytorch加速|V100         |FP32|62.5   |16       |
+|TensorRT加速|T4          |FP32|77     |13       |
+|TensorRT加速|T4          |FP16|24     |41       |
+|优化手段+TensorRT加速|T4  |FP32|71.4   |13      |
+|优化手段+TensorRT加速|T4  |FP16|24     |40      |
+|优化手段+TensorRT加速|A10 |FP32|21.5   |46      |
+|优化手段+TensorRT加速|A10 |FP16|14.7   |67      |
 
 ## 代码框架
 - AnchorDETR
@@ -96,27 +98,27 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
 ## Docker运行
 * 搭建Docker运行环境
 
-  1. docker pull
+  1. docker pull nvidia/cuda:11.4.2-cudnn8-devel-ubuntu20.04
 
 * 导出ONNX模型
 
-  1. 通过百度云盘下载anchor-detr-dc5模型，将模型放置于Model目录。
+  1. 通过百度云盘下载AnchorDETR_r50_dc5.pth模型，将模型放置于Model目录。
   2. 进入AnchorDERT，执行模型导出脚本
 
-  `python export_onnx.py --checkpoint ../Model/anchor-detr-dc5.pth`
+  `python3 export_onnx.py --checkpoint ../Model/AnchorDETR_r50_dc5.pth`
 
   3. 模型导出成功，会在Model目录下创建anchor-detr-dc5.onnx。
 
 * 模型优化
   1. 进入Trt目录，运行surgeonModel.py脚本，优化模型。
 
-  `python surgeonModel.py ../Model/anchor-detr-dc5.onnx ../Model/dc5_new.onnx`
+  `python3 surgeonModel.py ../Model/anchor-detr-dc5.onnx ../Model/dc5_new.onnx`
   
   2. 模型优化成功，会在Model目录下创建dc5_new.onnx。
 
 * TensorRT加速
   1. 进入Trt目录，编译生成TensorRT转换可执行文件。
-  `mkdir build && cd build && cmake .. && make`
+  `mkdir build && cd build && cmake .. && make j4`
   2. 运行./build/AnchorDETRTrt加速模型
     - FP32模型加速: 
     
@@ -130,8 +132,9 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
     `./build/AnchorDETRTrt ../Model/dc5_new.onnx 0 1`
 * 性能和精度评估
   1. 进入Trt目录，执行profileModel.py脚本。
+  `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/TensorRT-8.4.0.6/targets/x86_64-linux-gnu/lib/`
 
-  `python --plan AnchorDETR.plan`
+  `python3 profileModel.py --plan build/AnchorDETR.plan`
 
   2. 观察输出结果。
 
