@@ -2,7 +2,8 @@
 本项目主要贡献包括:
 - 基于TensorRT在Nvidia GPU平台实现Anchor DETR模型的转换和加速
   - 开源代码地址：<https://github.com/megvii-research/AnchorDETR>
-- 优化效果（精度和加速比）
+- 通过手动算子融合裁剪以及TensorRT实现在FP16下实时的性能要求，并且精度降低在合理范围内
+- 通过对比TensorRT8.4GA和TensorRT8.2得出，TensorRT8.4GA对该类模型本身有5%性能提升
 - 提供了在Docker里面代码编译、运行步骤的完整说明
 
 ## 原始模型
@@ -73,15 +74,16 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
 从2325降低到1985，整体算子降低14%。
 ### 性能和精度对比
 
-|优化手段 |硬件平台          |精度 |延迟(ms)|帧率(fps)|
-|-------|-----------------|----|-------|---------|
-|pytorch加速|V100         |FP32|62.5   |16       |
-|TensorRT加速|T4          |FP32|77     |13       |
-|TensorRT加速|T4          |FP16|24     |41       |
-|优化手段+TensorRT加速|T4  |FP32|71.4   |13      |
-|优化手段+TensorRT加速|T4  |FP16|24     |40      |
-|优化手段+TensorRT加速|A10 |FP32|21.5   |46      |
-|优化手段+TensorRT加速|A10 |FP16|14.7   |67      |
+|优化手段|软件版本|硬件平台  |精度 |延迟(ms)|帧率(fps)|绝对误差|相对误差|
+|-------|----|-----------------|----|-------|---------|-------|-------|
+|pytorch加速|pytorch1.8|V100 |FP32|62.5   |16       |无      |无     |
+|优化|TensorRT8.2|A10 |FP32|32.91  |30.4     |4.2e-2|1.3e-4|
+|优化|TensorRT8.2|A10 |FP16|14.7   |67       |||
+|优化|TensorRT8.2|A10 |INT8|24.9   |40.1     |3.9e0 |1.3e-2|
+|优化|TensorRT8.4|A10 |FP32|31.5   |31.7     |2.2e-2|9.5e-5|
+|优化|TensorRT8.4|A10 |FP16|21     |47.24    |-|-|
+|优化|TensorRT8.4|A10 |INT8|-|-|-|-|
+
 
 ## 代码框架
 - AnchorDETR
@@ -138,5 +140,17 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
 
   2. 观察输出结果。
 
+## 经验与体会
 
+通过本次比赛能对onnx模型裁剪操作、TensorRT加速流程有了更深入的理解，在Transformer模型加速、算子融合、TensorRT自定义算子方面积累了丰富的工程实践经验。
 
+后期还会继续AnchorDETR模型在低精度上的研究，使其在INT8和FP16上有更好的工程应用。
+
+## Known Issue
+* INT8模型量化在TensorRT8.4上无法正常模型加速。
+
+```
+ERROR: 2: [checkSanity.cpp::checkSanity::106] Error Code 2: Internal Error (Assertion regionNames.find(r->name) == regionNames.end() failed. Found duplicate region name (Unnamed Layer* 417) [Constant]_output')
+Segmentation fault (core dumped)
+```
+* INT8模型量化在TensorRT8.2上加速比出现回退，需要通过nsys进行定位。
