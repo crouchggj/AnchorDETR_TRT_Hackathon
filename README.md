@@ -108,7 +108,7 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
   `python3 export_onnx.py --checkpoint ../Model/AnchorDETR_r50_dc5.pth`
 
   3. 模型导出成功，会在Model目录下创建anchor-detr-dc5.onnx。
-  * 导出模型环境所使用的镜像名称为: ufoym/deepo:all-py36-cu101
+  * 导出模型环境所使用的镜像名称为: ufoym/deepo:all-py36-cu101, 驱动版本为510.47，支持显卡为T4、GTX1080TI...，暂不支持A10（由于pytorch版本限制）
 
 * 搭建Docker运行环境
 
