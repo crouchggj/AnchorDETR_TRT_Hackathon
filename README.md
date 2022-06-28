@@ -122,16 +122,18 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
 
   6. 通过docker images查看镜像是否构建成功。
 
-```shell
-user@user-PowerEdge-T630:~$ docker images
-REPOSITORY         TAG      IMAGE ID      CREATED         SIZE
-trt_hackathon      v2      c5a0ae0adefa   4 hours ago     14.7GB
-```
-  7. 通过trt_hackathon:v2镜像构建运行容器(也可通过docker-compose构建)。
-```
-cd ${user}/AnchorDETR_TRT_Hackathon/
-nvidia-docker run -it -v ${PWD}/:/workspace/ trt_hackathon:v2 /bin/bash
-```
+  ```shell
+  user@user-PowerEdge-T630:~$ docker images
+  REPOSITORY         TAG      IMAGE ID      CREATED         SIZE
+  trt_hackathon      v2      c5a0ae0adefa   4 hours ago     14.7GB
+  ```
+
+  7. 通过trt_hackathon:v2镜像构建运行容器(也可通过提供的docker-compose脚本构建)。
+
+  ```
+  cd ${user}/AnchorDETR_TRT_Hackathon/
+  nvidia-docker run -it -v ${PWD}/:/workspace/ trt_hackathon:v2 /bin/bash
+  ```
 
   8. 以下操作都在该容器中进行。
 
