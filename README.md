@@ -155,7 +155,9 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
 
 * TensorRT加速
   1. 进入Trt目录，编译生成TensorRT转换可执行文件。
+  
   `mkdir build && cd build && cmake .. && make -j8 && cd ..`
+  
   2. 运行./build/AnchorDETRTrt加速模型
     - FP32模型加速: 
     
