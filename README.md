@@ -97,27 +97,55 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
   - surgeonModel.py: onnx模型融合简化脚本
   - profileModel.py: TensorRT模型性能评估脚本
   - data: npz文件为模型性能评估对比数据，calibration为模型int8量化数据
+- Docker
+  - build.sh: 构建Docker镜像脚本
+  - Dockerfile
+  - docker-compose.yml: 通过docker-compose方便构建容器
 
 ## Docker运行
 
+* 搭建Docker运行环境
+  1. 确保nvidia驱动、nvidia docker、docker环境已经安装完毕。
+  2. 克隆仓库代码。
+  
+  `git clone https://github.com/crouchggj/AnchorDETR_TRT_Hackathon.git`
+  
+  3. 进入构建镜像目录。
+
+  `cd Docker`
+
+  4. 通过[百度云盘](https://pan.baidu.com/s/116zsIX7QcaDhfWhj2TUlZA)(code: yinj)下载TensorRT 8.4软件包在当前目录，本环境验证TensorRT8.4GA和TensorRT8.2。
+
+  5. 构建docker镜像。
+
+  `bash build.sh`
+
+  6. 通过docker images查看镜像是否构建成功。
+
+```shell
+user@user-PowerEdge-T630:~$ docker images
+REPOSITORY         TAG      IMAGE ID      CREATED         SIZE
+trt_hackathon      v2      c5a0ae0adefa   4 hours ago     14.7GB
+```
+  7. 通过trt_hackathon:v2镜像构建运行容器(也可通过docker-compose构建)。
+```
+cd ${user}/AnchorDETR_TRT_Hackathon/
+nvidia-docker run -it -v ${PWD}/:/workspace/ trt_hackathon:v2 /bin/bash
+```
+
+  8. 以下操作都在该容器中进行。
+
 * 导出ONNX模型
 
-  1. 通过百度云盘下载AnchorDETR_r50_dc5.pth模型，将模型放置于Model目录。
+  1. 通过百度云盘下载AnchorDETR_r50_dc5.pth模型，将模型放置于/workspace/Model目录。
   2. 进入AnchorDERT，执行模型导出脚本
 
-  `python3 export_onnx.py --checkpoint ../Model/AnchorDETR_r50_dc5.pth`
+  `python3 export_onnx.py --checkpoint ../Model/AnchorDETR_r50_dc5.pth --device cpu`
 
-  3. 模型导出成功，会在Model目录下创建anchor-detr-dc5.onnx。
-  * 导出模型环境所使用的镜像名称为: ufoym/deepo:all-py36-cu101, 驱动版本为510.47，支持显卡为T4、GTX1080TI...，暂不支持A10（由于pytorch版本限制）
-
-* 搭建Docker运行环境
-
-  1. 拉取运行镜像
-  
-  `docker pull nvidia/cuda:11.4.2-cudnn8-devel-ubuntu20.04`
+  3. 模型导出成功，会在/workspace/Model目录下创建anchor-detr-dc5.onnx。
 
 * 模型优化
-  1. 进入Trt目录，运行surgeonModel.py脚本，优化模型。
+  1. 进入/workspace/Trt目录，运行surgeonModel.py脚本，优化模型。
 
   `python3 surgeonModel.py ../Model/anchor-detr-dc5.onnx ../Model/dc5_new.onnx`
   
@@ -125,7 +153,7 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
 
 * TensorRT加速
   1. 进入Trt目录，编译生成TensorRT转换可执行文件。
-  `mkdir build && cd build && cmake .. && make j8`
+  `mkdir build && cd build && cmake .. && make -j8 && cd ..`
   2. 运行./build/AnchorDETRTrt加速模型
     - FP32模型加速: 
     
@@ -139,11 +167,11 @@ ValueError: Message onnx.ModelProto exceeds maximum protobuf size of 2GB: 775358
     `./build/AnchorDETRTrt ../Model/dc5_new.onnx 0 1`
 * 性能和精度评估
   1. 进入Trt目录，执行profileModel.py脚本。
-  `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/TensorRT-8.4.0.6/targets/x86_64-linux-gnu/lib/`
+  `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/TensorRT/lib/`
 
   `python3 profileModel.py --plan build/XX_AnchorDETR.plan`
 
-  2. 观察输出结果。
+  2. 观察输出结果，其中显示延迟、帧率、绝对精度对比和相对精度对比。
 
 ## 经验与体会
 

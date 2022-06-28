@@ -1,0 +1,14 @@
+version: '3'
+services:
+    trt_hackathon:
+        container_name: trt_hackathon
+        image: trt_hackathon:v2
+        environment:
+            NVIDIA_VISIBLE_DEVICES: all
+        volumes:
+          - .:/workspace
+          - /etc/localtime:/etc/localtime:ro
+        network_mode: host
+        tty : true
+        cap_add:
+          - SYS_PTRACE
